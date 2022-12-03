@@ -1,6 +1,10 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from base.models import Room
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, ListView, FormView
+
+from base.forms import RoomForm
+from base.models import Room, Message
 
 # Create your views here.
 
@@ -10,7 +14,35 @@ def hello(request):
     return HttpResponse(f"Hello {s}!")
 
 
-def rooms(request):
-    rooms = Room.objects.all()  # získání názvu všech místností
-    context = {'rooms': rooms}  # přidání vazby na html soubor (ve for loopě je 'rooms')
-    return render(request, template_name='base/rooms.html', context=context)  # renderování stránky
+# def rooms(request):
+#     rooms = Room.objects.all()  # získání názvu všech místností
+#     context = {'rooms': rooms}  # přidání vazby na html soubor (ve for loopě je 'rooms')
+#     return render(request, template_name='base/rooms.html', context=context)  # renderování stránky
+
+
+# class based view - využívá parent classu, abychom neuseli psát tolik kódu - o return a proměnnou méně než v
+# zakomentovaném kódu nahoře
+#Je ale potřeba v URL přepsat cestu na ....RoomsView.as_view()
+# class RoomsView(TemplateView):
+#     template_name = 'base/rooms.html'
+#     extra_context = {'rooms': Room.objects.all()}
+
+#Děděním z ListView není možné filtrovat výsledky!!! Jde o základní nejjednodušší třídní view
+#Vrací kontext object_list, proto je ptořeba v HTML souboru toto přepsat
+class RoomsView(ListView):
+    template_name = 'base/rooms.html'
+    model = Room
+
+
+def room(request, id):
+    room = Room.objects.get(id=id)  # získání místnosti podle id
+    messages = room.message_set.all()  # vybrání všech zpráv v dané místnosti
+    context = {'messages': messages, 'room': room}  # předání proměnných pro HTML soubor
+    return render(request, template_name='base/room.html', context=context)  # render webovky
+
+
+class RoomCreateView(FormView):
+    template_name = 'base/room_form.html'
+    form_class = RoomForm
+    success_url = reverse_lazy('rooms')
+
