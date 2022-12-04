@@ -2,9 +2,19 @@
 
 {% block content %}
     <h1>Rooms</h1>
+    <br>
     <div class="box">
         {% for room in object_list %}
-            <p><a href="{% url 'room' room.id %}">{{ room.name }}</a></p>
+            <div style="float: left;">
+                <a href="{% url 'room' room.id %}">{{ room.name }}</a>
+                <br>
+                {{room.description}}
+            </div>
+            <div style="float: right;">
+                <a href="{% url 'room_update' room.id %}">Edit</a>
+                <a href="{% url 'room_delete' room.id %}">Delete</a>
+            </div>
+        <br class="clearfix">
         {% endfor %}
     </div>
 {% endblock %}

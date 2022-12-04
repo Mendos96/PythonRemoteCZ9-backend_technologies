@@ -18,6 +18,7 @@ class Room(Model):
     class Meta:
         ordering = ['-created', 'name']  # Seřazení místností podle data vytvoření (pomocí - od nejnovějšího po nejstarší), pokud by byly stejné tak podle jména
 
+
 class Message(Model):
     body = models.TextField()
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
