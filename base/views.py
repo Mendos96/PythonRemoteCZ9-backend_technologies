@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, FormView
+from django.views.generic import TemplateView, ListView, FormView, CreateView
 
 from base.forms import RoomForm
 from base.models import Room, Message
@@ -40,9 +40,24 @@ def room(request, id):
     context = {'messages': messages, 'room': room}  # předání proměnných pro HTML soubor
     return render(request, template_name='base/room.html', context=context)  # render webovky
 
+# Tato třída je ta samá jako ta s Create view, jen je delší zápis
+# class RoomCreateView(FormView):
+#     template_name = 'base/room_form.html'
+#     form_class = RoomForm
+#     success_url = reverse_lazy('rooms')
+#
+#     def form_valid(self, form):
+#         cleaned_data = form.cleaned_data
+#         Room.objects.create(
+#             name=cleaned_data['name'],
+#             description=cleaned_data['description']
+#         )
+#         return super().form_valid(form)
 
-class RoomCreateView(FormView):
+# Stejné jako nahoře, jen je potřeba do form.py přidat třídu Meta
+
+
+class RoomCreateView(CreateView):
     template_name = 'base/room_form.html'
     form_class = RoomForm
     success_url = reverse_lazy('rooms')
-
