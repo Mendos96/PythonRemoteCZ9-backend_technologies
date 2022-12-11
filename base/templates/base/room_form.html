@@ -5,7 +5,14 @@
     <br>
     <form method="post">
         {% csrf_token %}
-        <table>{{ form }}</table>
+        <div class="box">
+            <label for="{{ form.name.id_for_label }}">Room name</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+            <br>
+            <label for="{{ form.description.id_for_label }}" style="vertical_align: top">Description</label>
+            {{ form.description }}
+        </div>
         <button type="submit">Submit</button>
     </form>
 {% endblock %}

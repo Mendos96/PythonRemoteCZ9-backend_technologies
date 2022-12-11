@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
@@ -29,23 +31,29 @@ def hello(request):
 
 #Děděním z ListView není možné filtrovat výsledky!!! Jde o základní nejjednodušší třídní view
 #Vrací kontext object_list, proto je ptořeba v HTML souboru toto přepsat
-class RoomsView(ListView):
+
+
+class RoomsView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     template_name = 'base/rooms.html'
     model = Room
+    permission_required = ['base.view_room']
 
 
+@login_required
+@permission_required(['base.view_room', 'base.view_message'])
 def room(request, pk):
     room = Room.objects.get(id=pk)  # získání místnosti podle id
 
     #POST
     if request.method == "POST":
-        Message.objects.create(
-            user=request.user,
-            room=room,
-            body=request.POST.get('body')
-        )
-        room.participants.add(request.user)
-        room.save()
+        if request.user.has_perm('base.add_message'):
+            Message.objects.create(
+                user=request.user,
+                room=room,
+                body=request.POST.get('body')
+            )
+            room.participants.add(request.user)
+            room.save()
         return redirect('room', pk=pk)
 
     #GET
@@ -70,22 +78,35 @@ def room(request, pk):
 # Stejné jako nahoře, jen je potřeba do form.py přidat třídu Meta
 
 
-class RoomCreateView(CreateView):
+class RoomCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     template_name = 'base/room_form.html'
     form_class = RoomForm
     extra_context = {'title': 'Create room'}
     success_url = reverse_lazy('rooms')
+    permission_required = ['base.add_room']
 
 
-class RoomUpdateView(UpdateView):
+class RoomUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     template_name = 'base/room_form.html'
     form_class = RoomForm
     extra_context = {'title': 'Update room'}
     success_url = reverse_lazy('rooms')
     model = Room
+    permission_required = ['base.change_room']
 
 
-class RoomDeleteView(DeleteView):
+class StaffRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+class RoomDeleteView(StaffRequiredMixin, PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     template_name = 'base/room_confirm_delete.html'
     model = Room
     success_url = reverse_lazy('rooms')
+    permission_required = 'base.delete_room'
+
+
+def handler403(request, exception):
+    return render(request, '403.html', status=403)
+
