@@ -14,9 +14,19 @@
             <div id="logo">
                 <h1 id="logo h1">Chatterbox</h1>
             </div>
+            {% if user.is_authenticated %}
+            <div id="search">
+                <form action="{% url 'search' %}" method="get">
+                    <div>
+                        <input class="text" name="q">
+                    </div>
+                </form>
+            </div>
+
             <div id="menu">
                 {% include 'navbar.html' %}
             </div>
+            {% endif %}
         </div>
         <div id="page">
             <div id="content">

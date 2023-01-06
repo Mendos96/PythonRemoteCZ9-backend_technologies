@@ -14,6 +14,19 @@
     {% endif %}
 
         {% for message in messages %}
-            <div class="message">{{ message.body }}</div>
+            <div class="box">
+            {% if message.user == user %}
+                <div style="float:right"><b>{{ message.user }}</b> <i>[{{ message.created }}]</i></div>
+                <div class="message"
+                     style = "float: right;
+                                color: white;
+                                background: #e16060;">
+                    {{ message.body }}
+                </div>
+            {% else %}
+                <div><b>{{ message.user }}</b> <i>[{{ message.created }}]</i></div>
+                <div class="message">{{ message.body }}</div>
+            {% endif %}
+            </div>
         {% endfor %}
 {% endblock %}

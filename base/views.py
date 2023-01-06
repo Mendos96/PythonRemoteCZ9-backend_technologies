@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
@@ -12,8 +13,20 @@ from base.models import Room, Message
 
 
 def hello(request):
-    s = request.GET.get("s", "")
+    s = request.GET.get('s', '')
     return HttpResponse(f"Hello {s}!")
+
+
+@login_required
+@permission_required(['base.view_room'])
+def search(request):
+    q = request.GET.get('q', '')
+    rooms = Room.objects.filter(
+        Q(name__icontains=q) |
+        Q(description__icontains=q)
+    )
+    context = {'object_list': rooms}
+    return render(request, 'base/rooms.html', context)
 
 
 # def rooms(request):
@@ -54,7 +67,7 @@ def room(request, pk):
             )
             room.participants.add(request.user)
             room.save()
-        return redirect('room', pk=pk)
+            return redirect('room', pk=pk)
 
     #GET
     messages = room.message_set.all()  # vybrání všech zpráv v dané místnosti
